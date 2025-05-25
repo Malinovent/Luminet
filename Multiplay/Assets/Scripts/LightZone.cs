@@ -12,6 +12,7 @@ public class LightZone : NetworkBehaviour
 
     private NetworkVariable<ulong> controllingClientId = new NetworkVariable<ulong>(0);
     [SerializeField] private GameObject zoneRenderer;
+    [SerializeField] private GameObject opaqueRenderer;
     [SerializeField] private int maxCountInSeconds = 10;
 
     private Dictionary<ulong, int> playerShipCount = new Dictionary<ulong, int>();
@@ -20,6 +21,7 @@ public class LightZone : NetworkBehaviour
     private ulong playerWithMostShipsID = NEUTRAL;
     private int numberOfShipsDifference = 0;
     private float counter = 0;
+    private bool enemyIsInZone = false;
 
     public Action onPointCaptured;
 
@@ -33,7 +35,7 @@ public class LightZone : NetworkBehaviour
         
         if (!IsServer) return;
         
-        var ship = other.GetComponent<ShipBase>();
+        ShipBase ship = other.GetComponent<ShipBase>();
         if (ship != null && !allShipsInZone.Contains(ship))
         {
             ulong shipOwner = ship.GetOwnerId();
@@ -46,6 +48,8 @@ public class LightZone : NetworkBehaviour
             allShipsInZone.Add(ship);
 
             CalculatePlayerWithMostShips();
+            IsEnemyInZone();
+            UpdateVisual();
         }
     }
 
@@ -53,13 +57,15 @@ public class LightZone : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        var ship = collision.GetComponent<ShipBase>();
+        ShipBase ship = collision.GetComponent<ShipBase>();
         if (ship != null)
         {
             ulong shipOwner = ship.GetOwnerId();
             playerShipCount[shipOwner]--;
             allShipsInZone.Remove(ship);
             CalculatePlayerWithMostShips();
+            IsEnemyInZone();
+            UpdateVisual();
         }
     }
 
@@ -67,7 +73,7 @@ public class LightZone : NetworkBehaviour
     {
         if(!IsServer) return;
 
-        if (playerWithMostShipsID == NEUTRAL && counter > 0)
+        if (playerWithMostShipsID == NEUTRAL && controllingClientId.Value == NEUTRAL && counter > 0)
         {
             counter -= Time.deltaTime;
             if(counter < 0)
@@ -95,6 +101,7 @@ public class LightZone : NetworkBehaviour
 
                 onPointCaptured?.Invoke();
                 counter = 0;
+                IsEnemyInZone();
             }
 
         }
@@ -104,7 +111,6 @@ public class LightZone : NetworkBehaviour
     {
         if(allShipsInZone.Count == 0)
         {
-            controllingClientId.Value = NEUTRAL;
             playerWithMostShipsID = NEUTRAL;
             numberOfShipsDifference = 0;
             return;
@@ -136,6 +142,26 @@ public class LightZone : NetworkBehaviour
         }
     }
 
+    private void IsEnemyInZone()
+    {
+        if (controllingClientId.Value == NEUTRAL || allShipsInZone.Count > 0)
+        {
+            enemyIsInZone = true;
+            return;
+        }
+       
+        foreach (ShipBase ship in allShipsInZone)
+        {
+            if (ship.GetOwnerId() != controllingClientId.Value)
+            {
+                enemyIsInZone = true;
+                return;
+            }
+        }
+
+        enemyIsInZone = false;
+    }
+
     private void Start()
     {
         controllingClientId.OnValueChanged += (oldVal, newVal) => UpdateVisual();
@@ -158,7 +184,19 @@ public class LightZone : NetworkBehaviour
         if (zoneRenderer == null) return;
         
         bool shouldShow = NetworkManager.Singleton.LocalClientId == controllingClientId.Value;
-        zoneRenderer.SetActive(shouldShow);
+        //zoneRenderer.SetActive(shouldShow);
+        zoneRenderer.GetComponent<Renderer>().material.color = controllingClientId.Value == NEUTRAL ? Color.white : PlayerColors.GetColorForClient(controllingClientId.Value);
+
+        if(opaqueRenderer == null) return;
+
+        if (enemyIsInZone)
+        {
+            opaqueRenderer.SetActive(false);
+            return;
+        }
+
+        opaqueRenderer.SetActive(!shouldShow);
+        opaqueRenderer.GetComponent<Renderer>().material.color = controllingClientId.Value == NEUTRAL ? Color.white : PlayerColors.GetColorForClient(controllingClientId.Value);
     }
 
     public void DebugChangeOwner()
