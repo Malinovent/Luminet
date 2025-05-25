@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ShipHeavyFighter : ShipBase
 {
-    [SerializeField] BehaviourCapturePoint capturePoint;
+    [SerializeField] BehaviourCapturePoint capturePointBehaviour;
 
     private HeavyFighterStates currentState = HeavyFighterStates.Move;
 
@@ -10,12 +10,12 @@ public class ShipHeavyFighter : ShipBase
 
     private void OnEnable()
     {
-        capturePoint.OnEndCapture += OnEndCapture;
+        capturePointBehaviour.OnEndCapture += OnEndCapture;
     }
 
     private void OnDisable()
     {
-        capturePoint.OnEndCapture -= OnEndCapture;
+        capturePointBehaviour.OnEndCapture -= OnEndCapture;
     }
 
     private void Update()
