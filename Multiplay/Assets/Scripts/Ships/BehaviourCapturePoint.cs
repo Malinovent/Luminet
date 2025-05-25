@@ -25,7 +25,7 @@ public class BehaviourCapturePoint : NetworkBehaviour, ICapturePoint
         if (!IsServer) return;        
         LightZone zone = other.GetComponent<LightZone>();
 
-        if (zone && zone.GetControllingClientId() != OwnerClientId && currentZone != zone)
+        if (zone && zone.GetControllingClientId() != clientID && currentZone != zone)
         {
             currentZone = zone;
             zone.onPointCaptured += UpdateCaptureState;            

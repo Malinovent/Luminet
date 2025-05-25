@@ -14,7 +14,7 @@ public abstract class ShipBase : NetworkBehaviour
 
     protected NetworkVariable<ulong> ownerId = new NetworkVariable<ulong>();
 
-    public void InitializeLane(SplineContainer assignedLane, int moveDirection, ulong ownerID)
+    public virtual void Initialize(SplineContainer assignedLane, int moveDirection, ulong ownerID)
     {
         lane = assignedLane;
         direction = moveDirection;

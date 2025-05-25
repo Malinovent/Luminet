@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Splines;
 
 public class ShipHeavyFighter : ShipBase
 {
@@ -6,12 +7,18 @@ public class ShipHeavyFighter : ShipBase
 
     private HeavyFighterStates currentState = HeavyFighterStates.Move;
 
-    public override void OnNetworkSpawn()
+    public override void Initialize(SplineContainer assignedLane, int moveDirection, ulong ownerID)
+    {
+        base.Initialize(assignedLane, moveDirection, ownerID);
+        capturePointBehaviour.Initialize(ownerID);
+    }
+
+    /*public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
         capturePointBehaviour.Initialize(ownerId.Value);
-    }
+    }*/
 
 
     private void OnEnable()

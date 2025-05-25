@@ -1,6 +1,5 @@
 using UnityEngine;
 using Unity.Netcode;
-using System.Threading;
 using System.Collections.Generic;
 using System;
 
@@ -21,13 +20,23 @@ public class LightZone : NetworkBehaviour
     private ulong playerWithMostShipsID = NEUTRAL;
     private int numberOfShipsDifference = 0;
     private float counter = 0;
-    private bool enemyIsInZone = false;
+    private NetworkVariable<bool> myShipPresent = new NetworkVariable<bool>(false);
+    private NetworkList<ulong> playersWithShips = new NetworkList<ulong>();
+
 
     public Action onPointCaptured;
 
     public ulong GetControllingClientId()
     {
         return controllingClientId.Value;
+    }
+
+    private void Start()
+    {
+        controllingClientId.OnValueChanged += (oldVal, newVal) => UpdateVisual();
+        myShipPresent.OnValueChanged += (oldVal, newVal) => UpdateVisual();
+        playersWithShips.OnListChanged += (change) => UpdateVisual();
+        UpdateVisual();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -47,8 +56,7 @@ public class LightZone : NetworkBehaviour
             playerShipCount[shipOwner]++;
             allShipsInZone.Add(ship);
 
-            CalculatePlayerWithMostShips();
-            IsEnemyInZone();
+            CalculatePlayerWithMostShips();            
             UpdateVisual();
         }
     }
@@ -64,7 +72,6 @@ public class LightZone : NetworkBehaviour
             playerShipCount[shipOwner]--;
             allShipsInZone.Remove(ship);
             CalculatePlayerWithMostShips();
-            IsEnemyInZone();
             UpdateVisual();
         }
     }
@@ -101,7 +108,7 @@ public class LightZone : NetworkBehaviour
 
                 onPointCaptured?.Invoke();
                 counter = 0;
-                IsEnemyInZone();
+                UpdatePlayersWithShips();
             }
 
         }
@@ -140,33 +147,38 @@ public class LightZone : NetworkBehaviour
             playerWithMostShipsID = maxPlayer;
             numberOfShipsDifference = maxCount - secondMax;
         }
+
+        //FindMyShip();
+        UpdatePlayersWithShips();
     }
 
-    private void IsEnemyInZone()
+    private void UpdatePlayersWithShips()
     {
-        if (controllingClientId.Value == NEUTRAL || allShipsInZone.Count > 0)
+        playersWithShips.Clear();
+        foreach (var ship in allShipsInZone)
         {
-            enemyIsInZone = true;
-            return;
+            ulong ownerId = ship.GetOwnerId();
+            if (!playersWithShips.Contains(ownerId))
+                playersWithShips.Add(ownerId);
         }
-       
+    }
+
+    private void FindMyShip()
+    {
+        bool foundMine = false;
         foreach (ShipBase ship in allShipsInZone)
         {
-            if (ship.GetOwnerId() != controllingClientId.Value)
+            if (ship.GetOwnerId() == NetworkManager.Singleton.LocalClientId)
             {
-                enemyIsInZone = true;
-                return;
+                Debug.Log("Found my ship in zone " + controllingClientId.Value);
+                foundMine = true;
+                break;
             }
         }
 
-        enemyIsInZone = false;
+        myShipPresent.Value = foundMine;
     }
 
-    private void Start()
-    {
-        controllingClientId.OnValueChanged += (oldVal, newVal) => UpdateVisual();
-        UpdateVisual();
-    }
 
     public override void OnNetworkSpawn()
     {
@@ -182,31 +194,26 @@ public class LightZone : NetworkBehaviour
     private void UpdateVisual()
     {
         if (zoneRenderer == null) return;
+
+        bool isControlledByMe = NetworkManager.Singleton.LocalClientId == controllingClientId.Value;
         
-        bool shouldShow = NetworkManager.Singleton.LocalClientId == controllingClientId.Value;
-        //zoneRenderer.SetActive(shouldShow);
-        zoneRenderer.GetComponent<Renderer>().material.color = controllingClientId.Value == NEUTRAL ? Color.white : PlayerColors.GetColorForClient(controllingClientId.Value);
+        zoneRenderer.GetComponent<Renderer>().material.color = 
+            controllingClientId.Value == NEUTRAL ? Color.white : PlayerColors.GetColorForClient(controllingClientId.Value);
 
         if(opaqueRenderer == null) return;
 
-        if (enemyIsInZone)
+        ulong myClientId = NetworkManager.Singleton.LocalClientId;
+        bool myShipPresent = playersWithShips.Contains(myClientId);
+
+        if (isControlledByMe || myShipPresent)
         {
             opaqueRenderer.SetActive(false);
-            return;
         }
-
-        opaqueRenderer.SetActive(!shouldShow);
-        opaqueRenderer.GetComponent<Renderer>().material.color = controllingClientId.Value == NEUTRAL ? Color.white : PlayerColors.GetColorForClient(controllingClientId.Value);
-    }
-
-    public void DebugChangeOwner()
-    {
-        if (!IsServer) return;
-        
-        controllingClientId.Value++;
-        if (controllingClientId.Value > 1)
+        else
         {
-            controllingClientId.Value = 0;
+            opaqueRenderer.SetActive(true);
+            opaqueRenderer.GetComponent<Renderer>().material.color =
+                controllingClientId.Value == NEUTRAL ? Color.white : PlayerColors.GetColorForClient(controllingClientId.Value);
         }
     }
 }

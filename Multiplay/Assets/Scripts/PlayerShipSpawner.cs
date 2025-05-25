@@ -63,6 +63,6 @@ public class PlayerShipSpawner : NetworkBehaviour
 
         // Initialize movement on the server
         ShipBase move = ship.GetComponent<ShipBase>();
-        move.InitializeLane(lane, direction, requestingClientId);
+        move.Initialize(lane, direction, requestingClientId);
     }
 }
