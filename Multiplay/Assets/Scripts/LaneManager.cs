@@ -4,13 +4,14 @@ using UnityEngine.Splines;
 
 public class LaneManager : Singleton<LaneManager>
 {
-    public SplineContainer[] lanes; 
+    public LaneController[] lanes; 
 
-    public SplineContainer GetLane(int index)
+    public LaneController GetLane(int index)
     {
         if (index >= 0 && index < lanes.Length)
-            return lanes[index];
+            return lanes[index].GetComponent<LaneController>();
 
         return null;
     }
 }
+

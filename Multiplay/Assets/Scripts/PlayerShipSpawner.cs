@@ -50,12 +50,12 @@ public class PlayerShipSpawner : NetworkBehaviour
     [ServerRpc]
     void RequestSpawnShipServerRpc(int laneIndex, int direction, ServerRpcParams rpcParams = default)
     {
-        SplineContainer lane = LaneManager.Instance.GetLane(laneIndex);
+        LaneController lane = LaneManager.Instance.GetLane(laneIndex);
         if (lane == null) return;
 
         ulong requestingClientId = rpcParams.Receive.SenderClientId;
 
-        Vector3 spawnPos = direction == 1  ? lane.EvaluatePosition(0f) : lane.EvaluatePosition(1f);
+        Vector3 spawnPos = direction == 1  ? lane.Lane.EvaluatePosition(0f) : lane.Lane.EvaluatePosition(1f);
 
         GameObject ship = Instantiate(shipPrefab, spawnPos, Quaternion.identity);
         NetworkObject netObj = ship.GetComponent<NetworkObject>();

@@ -298,6 +298,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   speed: 0.05
+  formationOffset: 0.1
   playerVisuals: {fileID: 4901662133579875312}
   lightMask: {fileID: 3351177046804424948}
   capturePointBehaviour: {fileID: 6810137904656704966}

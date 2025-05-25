@@ -4,34 +4,41 @@ using UnityEngine.Splines;
 
 public abstract class ShipBase : NetworkBehaviour
 {
-    [SerializeField] float speed = 0.2f; // tweak for game feel
+    [SerializeField] float speed = 0.2f; 
+    [SerializeField] float formationOffset = 1.0f; 
     [SerializeField] PlayerVisuals playerVisuals;
     [SerializeField] GameObject lightMask;
-
+    
+    private LaneController laneController;
     private SplineContainer lane;
     private int direction = 1;
     private float t;
 
     protected NetworkVariable<ulong> ownerId = new NetworkVariable<ulong>();
 
-    public virtual void Initialize(SplineContainer assignedLane, int moveDirection, ulong ownerID)
+    public float GetT() => t;
+
+    public virtual void Initialize(LaneController laneController, int moveDirection, ulong ownerID)
     {
-        lane = assignedLane;
+        this.laneController = laneController;
+        lane = laneController.Lane;
         direction = moveDirection;
         t = direction == 1 ? 0f : 1f;
         transform.position = lane.EvaluatePosition(t);
 
 
         if (IsServer)
-            ownerId.Value = ownerID; 
+            ownerId.Value = ownerID;
 
-       // playerVisuals.SetClientID(ownerID);
+        laneController.AddShip(this);
+        SetVisuals();
+        // playerVisuals.SetClientID(ownerID);
     }
 
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
         SetVisuals();
-
         ownerId.OnValueChanged += (oldVal, newVal) => SetVisuals();
     }
 
@@ -49,7 +56,7 @@ public abstract class ShipBase : NetworkBehaviour
         SetLightMask();
     }
 
-    protected void MoveAlongSpline()
+    /*protected void MoveAlongSpline()
     {
         if (lane == null)
             return;
@@ -58,6 +65,24 @@ public abstract class ShipBase : NetworkBehaviour
         t = Mathf.Clamp01(t);
 
         transform.position = lane.EvaluatePosition(t);
+
+        if ((direction == 1 && t >= 1f) || (direction == -1 && t <= 0f))
+            OnPathEndReached();
+    }*/
+
+    protected void MoveAlongSpline()
+    {
+        if (lane == null)
+            return;
+
+        t += direction * speed * Time.deltaTime;
+        t = Mathf.Clamp01(t);
+
+        Vector3 basePos = lane.EvaluatePosition(t);
+        
+        Vector3 offset = laneController.GetFormationOffset(this, formationOffset); 
+
+        transform.position = Vector3.Lerp(transform.position, basePos + offset, Time.deltaTime * 10f);
 
         if ((direction == 1 && t >= 1f) || (direction == -1 && t <= 0f))
             OnPathEndReached();
@@ -72,4 +97,14 @@ public abstract class ShipBase : NetworkBehaviour
     {
         return ownerId.Value;
     }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        // Cleanly remove from lane controller if present
+        if (laneController != null)
+            laneController.RemoveShip(this);
+    }
+
 }

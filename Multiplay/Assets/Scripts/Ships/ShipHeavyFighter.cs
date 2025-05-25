@@ -7,9 +7,9 @@ public class ShipHeavyFighter : ShipBase
 
     private HeavyFighterStates currentState = HeavyFighterStates.Move;
 
-    public override void Initialize(SplineContainer assignedLane, int moveDirection, ulong ownerID)
+    public override void Initialize(LaneController laneController, int moveDirection, ulong ownerID)
     {
-        base.Initialize(assignedLane, moveDirection, ownerID);
+        base.Initialize(laneController, moveDirection, ownerID);
         capturePointBehaviour.Initialize(ownerID);
     }
 
