@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Threading;
 using System.Collections.Generic;
+using System;
 
 public class LightZone : NetworkBehaviour
 {
@@ -20,20 +21,26 @@ public class LightZone : NetworkBehaviour
     private int numberOfShipsDifference = 0;
     private float counter = 0;
 
+    public Action onPointCaptured;
+
+    public ulong GetControllingClientId()
+    {
+        return controllingClientId.Value;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"OnTriggerEnter called with {other.name}");
+        
         if (!IsServer) return;
-        Debug.Log($"OnTriggerEnter called with {other.name} on server");
+        
         var ship = other.GetComponent<ShipBase>();
         if (ship != null && !allShipsInZone.Contains(ship))
         {
-            Debug.Log($"Ship detected: {ship.name}");
             ulong shipOwner = ship.GetOwnerId();
             if (!playerShipCount.ContainsKey(shipOwner))
             {
                 playerShipCount[shipOwner] = 0;
-            }
+            }            
 
             playerShipCount[shipOwner]++;
             allShipsInZone.Add(ship);
@@ -79,13 +86,14 @@ public class LightZone : NetworkBehaviour
                 //Set to neutral if no one is in the zone
                 if (controllingClientId.Value != NEUTRAL)
                 {
-                    controllingClientId.Value = NEUTRAL;                   
+                    controllingClientId.Value = NEUTRAL;                    
                 }
                 else
                 {
-                    controllingClientId.Value = playerWithMostShipsID;
+                    controllingClientId.Value = playerWithMostShipsID;                    
                 }
 
+                onPointCaptured?.Invoke();
                 counter = 0;
             }
 
@@ -139,8 +147,7 @@ public class LightZone : NetworkBehaviour
         base.OnNetworkSpawn();
         if (IsServer)
         {
-            controllingClientId.Value = startingClientId;
-            Debug.Log($"LightZone started with controlling client ID: {startingClientId}");
+            controllingClientId.Value = startingClientId;           
         }
 
         UpdateVisual();
@@ -157,7 +164,7 @@ public class LightZone : NetworkBehaviour
     public void DebugChangeOwner()
     {
         if (!IsServer) return;
-        Debug.Log($"DebugChangeOwner called. Current controlling client ID: {controllingClientId.Value}");
+        
         controllingClientId.Value++;
         if (controllingClientId.Value > 1)
         {

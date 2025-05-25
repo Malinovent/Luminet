@@ -12,7 +12,7 @@ public abstract class ShipBase : NetworkBehaviour
     private int direction = 1;
     private float t;
 
-    private NetworkVariable<ulong> ownerId = new NetworkVariable<ulong>();
+    protected NetworkVariable<ulong> ownerId = new NetworkVariable<ulong>();
 
     public void InitializeLane(SplineContainer assignedLane, int moveDirection, ulong ownerID)
     {
@@ -48,11 +48,6 @@ public abstract class ShipBase : NetworkBehaviour
         playerVisuals.SetClientID(ownerId.Value);
         SetLightMask();
     }
-
-    /*void Update()
-    {
-        MoveAlongSpline();
-    }*/
 
     protected void MoveAlongSpline()
     {

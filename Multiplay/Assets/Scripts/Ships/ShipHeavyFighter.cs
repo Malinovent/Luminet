@@ -6,16 +6,24 @@ public class ShipHeavyFighter : ShipBase
 
     private HeavyFighterStates currentState = HeavyFighterStates.Move;
 
-    private bool isCapturing = false;
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        capturePointBehaviour.Initialize(ownerId.Value);
+    }
+
 
     private void OnEnable()
     {
         capturePointBehaviour.OnEndCapture += OnEndCapture;
+        capturePointBehaviour.OnStartCapture += OnStartCapture;
     }
 
     private void OnDisable()
     {
         capturePointBehaviour.OnEndCapture -= OnEndCapture;
+        capturePointBehaviour.OnStartCapture -= OnStartCapture;
     }
 
     private void Update()
@@ -35,13 +43,22 @@ public class ShipHeavyFighter : ShipBase
 
     private void OnEndCapture()
     {
+        Debug.Log("OnEndCapture called");
         if (currentState != HeavyFighterStates.Attack)
         {
+            Debug.Log("OnEndCapture called and currentState is not Attack");
             SetState(HeavyFighterStates.Move);
         }
     }
 
-   
+    private void OnStartCapture()
+    {
+        if(currentState != HeavyFighterStates.Attack)
+        {
+            SetState(HeavyFighterStates.Capture);
+        }        
+    }
+
     private void AttackBehaviour()
     {
         //Do damage periodically to priority target
@@ -49,12 +66,6 @@ public class ShipHeavyFighter : ShipBase
 
     private void SetState(HeavyFighterStates newState)
     {
-        if(isCapturing && newState == HeavyFighterStates.Move)
-        {
-            currentState = HeavyFighterStates.Capture;
-            return;
-        }
-        
         currentState = newState;
     }
     
