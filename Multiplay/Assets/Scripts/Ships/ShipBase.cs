@@ -8,6 +8,8 @@ public abstract class ShipBase : NetworkBehaviour
     [SerializeField] float formationOffset = 1.0f; 
     [SerializeField] PlayerVisuals playerVisuals;
     [SerializeField] GameObject lightMask;
+    [SerializeField] Health3D health;
+    [SerializeField] GameObject explosionPrefab;
     
     private LaneController laneController;
     private SplineContainer lane;
@@ -56,19 +58,10 @@ public abstract class ShipBase : NetworkBehaviour
         SetLightMask();
     }
 
-    /*protected void MoveAlongSpline()
+    public void TakeDamage(int amount)
     {
-        if (lane == null)
-            return;
-
-        t += direction * speed * Time.deltaTime;
-        t = Mathf.Clamp01(t);
-
-        transform.position = lane.EvaluatePosition(t);
-
-        if ((direction == 1 && t >= 1f) || (direction == -1 && t <= 0f))
-            OnPathEndReached();
-    }*/
+        health.TakeDamage(amount);
+    }
 
     protected void MoveAlongSpline()
     {
@@ -96,6 +89,12 @@ public abstract class ShipBase : NetworkBehaviour
     public ulong GetOwnerId()
     {
         return ownerId.Value;
+    }
+
+    public void Die()
+    {
+        Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        Destroy(this.gameObject);
     }
 
     public override void OnDestroy()

@@ -4,6 +4,8 @@ using UnityEngine.Splines;
 public class ShipHeavyFighter : ShipBase
 {
     [SerializeField] BehaviourCapturePoint capturePointBehaviour;
+    //[SerializeField] BehaviourAttackSingle attackBehaviour;
+    IAttackBehaviour attackBehaviour;
 
     private HeavyFighterStates currentState = HeavyFighterStates.Move;
 
@@ -11,8 +13,13 @@ public class ShipHeavyFighter : ShipBase
     {
         base.Initialize(laneController, moveDirection, ownerID);
         capturePointBehaviour.Initialize(ownerID);
+        attackBehaviour.Initialize(laneController);
     }
 
+    private void Awake()
+    {
+        attackBehaviour = GetComponent<IAttackBehaviour>();
+    }
     /*public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -37,6 +44,8 @@ public class ShipHeavyFighter : ShipBase
     {
         if (!IsServer) return;
 
+        CheckForEnemy();
+
         switch(currentState)
         {
             case HeavyFighterStates.Move:
@@ -45,6 +54,22 @@ public class ShipHeavyFighter : ShipBase
             case HeavyFighterStates.Attack:
                 AttackBehaviour();
                 break;
+        }
+    }
+
+    private void CheckForEnemy()
+    {
+        if (attackBehaviour.HasEnemyInRange())
+        {
+            SetState(HeavyFighterStates.Attack);
+        }
+        else if(capturePointBehaviour.IsCapturing)
+        {
+            SetState(HeavyFighterStates.Capture);
+        }
+        else if (currentState == HeavyFighterStates.Attack && !attackBehaviour.HasEnemyInRange())
+        {
+            SetState(HeavyFighterStates.Move);
         }
     }
 
@@ -68,7 +93,7 @@ public class ShipHeavyFighter : ShipBase
 
     private void AttackBehaviour()
     {
-        //Do damage periodically to priority target
+        attackBehaviour.PerformAttack();        
     }
 
     private void SetState(HeavyFighterStates newState)

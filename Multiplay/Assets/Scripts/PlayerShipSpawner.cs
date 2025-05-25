@@ -7,7 +7,7 @@ using UnityEngine.Splines;
 public class PlayerShipSpawner : NetworkBehaviour
 {
 
-    [SerializeField] private GameObject shipPrefab; // Prefab with NetworkObject, NetworkTransform, ShipMovement
+    [SerializeField] private GameObject[] shipPrefabs; // Prefab with NetworkObject, NetworkTransform, ShipMovement
     [SerializeField] private PlayerVisuals playerVisuals;
 
     private ulong myClientId;
@@ -57,7 +57,9 @@ public class PlayerShipSpawner : NetworkBehaviour
 
         Vector3 spawnPos = direction == 1  ? lane.Lane.EvaluatePosition(0f) : lane.Lane.EvaluatePosition(1f);
 
-        GameObject ship = Instantiate(shipPrefab, spawnPos, Quaternion.identity);
+        GameObject randomShip = shipPrefabs[Random.Range(0, shipPrefabs.Length)];
+
+        GameObject ship = Instantiate(randomShip, spawnPos, Quaternion.identity);
         NetworkObject netObj = ship.GetComponent<NetworkObject>();
         netObj.Spawn();
 

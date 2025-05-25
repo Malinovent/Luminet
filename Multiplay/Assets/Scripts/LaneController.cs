@@ -93,5 +93,42 @@ public class LaneController : MonoBehaviour
         return enemies;
     }
 
-    
+    public ShipBase GetClosestEnemyInRange(ShipBase requester, float rangeT)
+    {
+        ShipBase closest = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (var ship in shipsOnLane)
+        {
+            if (ship == requester) continue;
+            if (ship.GetOwnerId() != requester.GetOwnerId())
+            {
+                float dt = Mathf.Abs(ship.GetT() - requester.GetT());
+                if (dt < rangeT && dt < closestDistance)
+                {
+                    closestDistance = dt;
+                    closest = ship;
+                }
+            }
+        }
+        return closest;
+    }
+
+    public List<ShipBase> GetEnemiesInAoeRange(ShipBase requester, float aoeRangeT)
+    {
+        List<ShipBase> result = new List<ShipBase>();
+        foreach (var ship in shipsOnLane)
+        {
+            if (ship == requester) continue;
+            if (ship.GetOwnerId() != requester.GetOwnerId())
+            {
+                float dt = Mathf.Abs(ship.GetT() - requester.GetT());
+                if (dt < aoeRangeT)
+                    result.Add(ship);
+            }
+        }
+        return result;
+    }
+
+
 }

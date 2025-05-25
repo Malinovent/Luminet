@@ -1,5 +1,5 @@
 
-namespace Mali.Utils.Timers
+namespace Mali.Utils
 {
     using System;
     
