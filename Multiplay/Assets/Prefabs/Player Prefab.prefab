@@ -121,6 +121,7 @@ GameObject:
   - component: {fileID: 4783035959075980050}
   - component: {fileID: 6172860833137913350}
   - component: {fileID: 7564577344790349516}
+  - component: {fileID: 5199588884343051095}
   m_Layer: 0
   m_Name: Player Prefab
   m_TagString: Untagged
@@ -247,3 +248,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   rend: {fileID: 5878738825961191606}
+--- !u!114 &5199588884343051095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8789639021688058067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbb8ac5f2cd22784ca19fb41e036428f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  incomeTime: 10
+  Resource:
+    m_InternalValue: 10
+  Income:
+    m_InternalValue: 2
