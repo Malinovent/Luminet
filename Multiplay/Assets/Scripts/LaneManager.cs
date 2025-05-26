@@ -8,7 +8,7 @@ public class LaneManager : Singleton<LaneManager>
     
 
     private LaneController selectedLane;
-    public LaneController SelectedLine => selectedLane;
+    public LaneController SelectedLane => selectedLane;
 
     public void Start()
     {
@@ -23,7 +23,17 @@ public class LaneManager : Singleton<LaneManager>
         return null;
     }
 
-    public void SelecteLane(LaneController newLane)
+    public int GetSelectedLaneIndex()
+    {
+        for (int i = 0; i < lanes.Length; i++)
+        {
+            if (lanes[i] == SelectedLane)
+                return i;
+        }
+        return -1;
+    }
+
+    public void SelectLane(LaneController newLane)
     {
         selectedLane?.DisableOutline();
         selectedLane = newLane;

@@ -1,8 +1,5 @@
-using System.Globalization;
 using Unity.Netcode;
-using Unity.Services.Matchmaker.Models;
 using UnityEngine;
-using UnityEngine.Splines;
 
 public class PlayerShipSpawner : NetworkBehaviour
 {
@@ -10,13 +7,12 @@ public class PlayerShipSpawner : NetworkBehaviour
     [SerializeField] private GameObject[] shipPrefabs; // Prefab with NetworkObject, NetworkTransform, ShipMovement
     [SerializeField] private PlayerVisuals playerVisuals;
 
-    private ulong myClientId;
-    private int myDirection; // 1 for A->B, -1 for B->A
+    private PlayerScore playerScore;
+
 
     private void Start()
     {
-        myClientId = NetworkManager.Singleton.LocalClientId;        
-        myDirection = myClientId == 0 ? 1 : -1;
+        playerScore = GetComponent<PlayerScore>();
     }
 
     private void Update()
@@ -24,13 +20,13 @@ public class PlayerShipSpawner : NetworkBehaviour
         if (!IsOwner) return;
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
-            RequestSpawnShipServerRpc(0, myDirection);
+            RequestSpawnShipServerRpc(0, 1, 0);
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            RequestSpawnShipServerRpc(1, myDirection);
+            RequestSpawnShipServerRpc(1, 3, 0);
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
-            RequestSpawnShipServerRpc(2, myDirection);
+            RequestSpawnShipServerRpc(2, 6, 0);
     }
 
     public override void OnNetworkSpawn()
@@ -38,26 +34,34 @@ public class PlayerShipSpawner : NetworkBehaviour
         //SetColorServerRpc();
         base.OnNetworkSpawn();
         playerVisuals.SetClientID(OwnerClientId);
+        //myClientId = NetworkManager.Singleton.LocalClientId;
+
+        if (IsOwner && UIManager.Instance != null)
+        {
+            UIManager.Instance.SetLocalPlayerSpawner(this);
+        }
     }
 
-    /*[ServerRpc]
-    void SetColorServerRpc(ServerRpcParams rpcParams = default)
-    {
-        playerVisuals.SetClientID(rpcParams.Receive.SenderClientId);
-    }*/
-
-
     [ServerRpc]
-    void RequestSpawnShipServerRpc(int laneIndex, int direction, ServerRpcParams rpcParams = default)
+    public void RequestSpawnShipServerRpc(int shipIndex, int shipCost, int laneIndex, ServerRpcParams rpcParams = default)
     {
         LaneController lane = LaneManager.Instance.GetLane(laneIndex);
         if (lane == null) return;
 
+        if(playerScore.Resource.Value < shipCost)
+        {
+            return;
+        }
+
+        playerScore.Resource.Value -= shipCost;
+
         ulong requestingClientId = rpcParams.Receive.SenderClientId;
 
-        Vector3 spawnPos = direction == 1  ? lane.Lane.EvaluatePosition(0f) : lane.Lane.EvaluatePosition(1f);
+        int direction = requestingClientId == 0 ? 1 : -1;
 
-        GameObject randomShip = shipPrefabs[Random.Range(0, shipPrefabs.Length)];
+        Vector3 spawnPos = direction == 1 ? lane.Lane.EvaluatePosition(0f) : lane.Lane.EvaluatePosition(1f);
+
+        GameObject randomShip = shipPrefabs[shipIndex];
 
         GameObject ship = Instantiate(randomShip, spawnPos, Quaternion.identity);
         NetworkObject netObj = ship.GetComponent<NetworkObject>();

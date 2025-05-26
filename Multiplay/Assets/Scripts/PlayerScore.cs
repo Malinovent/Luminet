@@ -22,20 +22,11 @@ public class PlayerScore : NetworkBehaviour
         if (!IsServer) return;
 
         incomeTimer.Update(Time.deltaTime);
-    }
+    }   
 
     public void GainIncome()
     {
         Resource.Value += Income.Value;
         incomeTimer.Reset();
-    }
-
-    [ServerRpc]
-    public void RequestBuyShipServerRpc(int cost, ServerRpcParams rpcParams = default)
-    {
-        if (Resource.Value >= cost)
-        {
-            Resource.Value -= cost;
-        }
-    }
+    }    
 }

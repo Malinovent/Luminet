@@ -3,6 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Multiplayer.Center.NetcodeForGameObjectsExample.DistributedAuthority;
 
 public class UIManager : Singleton<UIManager>
 {
@@ -11,37 +12,23 @@ public class UIManager : Singleton<UIManager>
     public TMP_Text incomeText;
 
     PlayerScore localPlayerScore;
+    PlayerShipSpawner localPlayerSpawner;
 
-    void Start()
+    public void SetLocalPlayerSpawner(PlayerShipSpawner player)
     {
-        // Wait until player objects are spawned before finding your PlayerScore
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-    }
+        if (!player.IsOwner) return;
 
-    private void OnClientConnected(ulong clientId)
-    {
-        // Only do this for the local player!
-        if (clientId != NetworkManager.Singleton.LocalClientId) return;
+        localPlayerSpawner = player;
+        localPlayerScore = player.GetComponent<PlayerScore>();
 
-        // Find our own PlayerScore object
-        foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
-        {
-            if (client.ClientId == clientId)
-            {
-                localPlayerScore = client.PlayerObject.GetComponent<PlayerScore>();
+        localPlayerScore.Resource.OnValueChanged += (oldVal, newVal) => UpdateResourceUI(newVal);
+        localPlayerScore.Income.OnValueChanged += (oldVal, newVal) => UpdateIncomeUI(newVal);
 
-                // Subscribe to changes
-                localPlayerScore.Resource.OnValueChanged += (oldVal, newVal) => UpdateResourceUI(newVal);
-                localPlayerScore.Income.OnValueChanged += (oldVal, newVal) => UpdateIncomeUI(newVal);
+        UpdateResourceUI(localPlayerScore.Resource.Value);
+        UpdateIncomeUI(localPlayerScore.Income.Value);
 
-                // Initialize UI
-                UpdateResourceUI(localPlayerScore.Resource.Value);
-                UpdateIncomeUI(localPlayerScore.Income.Value);
-
-                break;
-            }
-        }
-    }
+        Debug.Log($"UIManager assigned localPlayerSpawner: {localPlayerSpawner.OwnerClientId}, LocalClientId: {NetworkManager.Singleton.LocalClientId}");
+    }   
 
     private void UpdateResourceUI(int newVal)
     {
@@ -55,9 +42,21 @@ public class UIManager : Singleton<UIManager>
 
     public void TryBuyShip(ShipData shipData)
     {
+        if (localPlayerSpawner != null)
+        {
+            Debug.Log($"UIManager calling spawn: LocalClientId: {NetworkManager.Singleton.LocalClientId}, Spawner Owner: {localPlayerSpawner.OwnerClientId}");
+            //localPlayerScore.RequestBuyShipServerRpc(shipData.shipIndex, shipData.cost);
+            localPlayerSpawner.RequestSpawnShipServerRpc(shipData.shipIndex, shipData.cost, LaneManager.Instance.GetSelectedLaneIndex());
+            //localPlayerSpawner.RequestSpawnShipServerRpc(shipData.shipIndex);
+        }
+    }
+
+    private void OnDestroy()
+    {
         if (localPlayerScore != null)
-        {                        
-            localPlayerScore.RequestBuyShipServerRpc(shipData.cost);
+        {
+            localPlayerScore.Resource.OnValueChanged -= (oldVal, newVal) => UpdateResourceUI(newVal);
+            localPlayerScore.Income.OnValueChanged -= (oldVal, newVal) => UpdateIncomeUI(newVal);
         }
     }
 }

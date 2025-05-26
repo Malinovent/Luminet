@@ -75,10 +75,10 @@ public class ShipHeavyFighter : ShipBase
 
     private void OnEndCapture()
     {
-        Debug.Log("OnEndCapture called");
+        //Debug.Log("OnEndCapture called");
         if (currentState != HeavyFighterStates.Attack)
         {
-            Debug.Log("OnEndCapture called and currentState is not Attack");
+            //Debug.Log("OnEndCapture called and currentState is not Attack");
             SetState(HeavyFighterStates.Move);
         }
     }

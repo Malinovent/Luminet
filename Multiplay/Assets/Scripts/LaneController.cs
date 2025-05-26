@@ -6,7 +6,7 @@ using UnityEngine.Splines;
 public class LaneController : MonoBehaviour, IRaycastable
 {
     [SerializeField] SplineContainer lane;
-    [SerializeField] Renderer renderer;
+    [SerializeField] Renderer meshRenderer;
     private List<ShipBase> shipsOnLane = new List<ShipBase>();
 
     public SplineContainer Lane => lane;
@@ -134,30 +134,30 @@ public class LaneController : MonoBehaviour, IRaycastable
 
     public void OnRaycastExit()
     {
-        if (LaneManager.Instance.SelectedLine == this) return;
+        if (LaneManager.Instance.SelectedLane == this) return;
 
         DisableOutline();
     }
 
     public void OnRaycastHit()
     {
-        LaneManager.Instance.SelecteLane(this);
+        LaneManager.Instance.SelectLane(this);
         EnableOutline();
     }
 
     public void EnableOutline()
     {
-        if (renderer != null)
+        if (meshRenderer != null)
         {
-            renderer.material.EnableKeyword("_EMISSION");
+            meshRenderer.material.EnableKeyword("_EMISSION");
         }
     }
 
     public void DisableOutline()
     {
-        if (renderer != null)
+        if (meshRenderer != null)
         {
-            renderer.material.DisableKeyword("_EMISSION");
+            meshRenderer.material.DisableKeyword("_EMISSION");
         }
     }
 }

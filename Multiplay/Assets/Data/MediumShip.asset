@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b330c4f790b28644abba6750fa130610, type: 3}
   m_Name: MediumShip
   m_EditorClassIdentifier: 
-  shipType: Medium
+  shipIndex: 1
   cost: 3
