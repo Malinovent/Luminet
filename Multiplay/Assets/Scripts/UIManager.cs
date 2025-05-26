@@ -27,7 +27,7 @@ public class UIManager : Singleton<UIManager>
         UpdateResourceUI(localPlayerScore.Resource.Value);
         UpdateIncomeUI(localPlayerScore.Income.Value);
 
-        Debug.Log($"UIManager assigned localPlayerSpawner: {localPlayerSpawner.OwnerClientId}, LocalClientId: {NetworkManager.Singleton.LocalClientId}");
+        //Debug.Log($"UIManager assigned localPlayerSpawner: {localPlayerSpawner.OwnerClientId}, LocalClientId: {NetworkManager.Singleton.LocalClientId}");
     }   
 
     private void UpdateResourceUI(int newVal)
@@ -44,7 +44,7 @@ public class UIManager : Singleton<UIManager>
     {
         if (localPlayerSpawner != null)
         {
-            Debug.Log($"UIManager calling spawn: LocalClientId: {NetworkManager.Singleton.LocalClientId}, Spawner Owner: {localPlayerSpawner.OwnerClientId}");
+            //Debug.Log($"UIManager calling spawn: LocalClientId: {NetworkManager.Singleton.LocalClientId}, Spawner Owner: {localPlayerSpawner.OwnerClientId}");
             //localPlayerScore.RequestBuyShipServerRpc(shipData.shipIndex, shipData.cost);
             localPlayerSpawner.RequestSpawnShipServerRpc(shipData.shipIndex, shipData.cost, LaneManager.Instance.GetSelectedLaneIndex());
             //localPlayerSpawner.RequestSpawnShipServerRpc(shipData.shipIndex);

@@ -105,4 +105,15 @@ public class Health3D : NetworkBehaviour
         Debug.Log("GameObject destroyed.");
         onDie?.Invoke();
     }
+
+    public void PopulateArray()
+    {
+        healthNodes = new GameObject[maxHealth];
+        for (int i = 0; i < maxHealth; i++)
+        {
+            healthNodes[i] = transform.GetChild(i).gameObject;
+        }
+    }
+
+    public GameObject[] HealthNodes => healthNodes;
 }
