@@ -3,10 +3,11 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Splines;
 
-public class LaneController : MonoBehaviour
+public class LaneController : MonoBehaviour, IRaycastable
 {
     [SerializeField] SplineContainer lane;
-    public List<ShipBase> shipsOnLane = new List<ShipBase>();
+    [SerializeField] Renderer renderer;
+    private List<ShipBase> shipsOnLane = new List<ShipBase>();
 
     public SplineContainer Lane => lane;
 
@@ -37,10 +38,6 @@ public class LaneController : MonoBehaviour
         // Only apply offset if there are multiple ships in the group
         if (group.Count < 2)
             return Vector3.zero;
-
-        // Only apply offset for "local player"
-        //if (ship.GetOwnerId() != NetworkManager.Singleton.LocalClientId)
-            //return Vector3.zero;
 
         // Zig-zag: alternate left/right
         float offsetAmount = ((slotIndex % 2 == 0) ? 1 : -1) * ((slotIndex + 1) / 2) * baseSpacing;
@@ -130,5 +127,37 @@ public class LaneController : MonoBehaviour
         return result;
     }
 
+    public void OnRaycastEnter()
+    {        
+        EnableOutline();
+    }
 
+    public void OnRaycastExit()
+    {
+        if (LaneManager.Instance.SelectedLine == this) return;
+
+        DisableOutline();
+    }
+
+    public void OnRaycastHit()
+    {
+        LaneManager.Instance.SelecteLane(this);
+        EnableOutline();
+    }
+
+    public void EnableOutline()
+    {
+        if (renderer != null)
+        {
+            renderer.material.EnableKeyword("_EMISSION");
+        }
+    }
+
+    public void DisableOutline()
+    {
+        if (renderer != null)
+        {
+            renderer.material.DisableKeyword("_EMISSION");
+        }
+    }
 }

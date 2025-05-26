@@ -4,7 +4,16 @@ using UnityEngine.Splines;
 
 public class LaneManager : Singleton<LaneManager>
 {
-    public LaneController[] lanes; 
+    public LaneController[] lanes;
+    
+
+    private LaneController selectedLane;
+    public LaneController SelectedLine => selectedLane;
+
+    public void Start()
+    {
+        lanes[0].OnRaycastHit();
+    }
 
     public LaneController GetLane(int index)
     {
@@ -12,6 +21,12 @@ public class LaneManager : Singleton<LaneManager>
             return lanes[index].GetComponent<LaneController>();
 
         return null;
+    }
+
+    public void SelecteLane(LaneController newLane)
+    {
+        selectedLane?.DisableOutline();
+        selectedLane = newLane;
     }
 }
 
