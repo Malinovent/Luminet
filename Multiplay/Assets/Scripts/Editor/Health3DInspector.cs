@@ -14,7 +14,8 @@ public class Health3DInspector : Editor
 
         maxNodesX = EditorGUILayout.IntField("Max Nodes X", maxNodesX);
         maxNodesY = EditorGUILayout.IntField("Max Nodes Y", maxNodesY);
-        spacing = EditorGUILayout.FloatField("Spacing", spacing);
+        spacing = EditorGUILayout.FloatField
+            ("Spacing", spacing);
 
         DrawDefaultInspector();
 
