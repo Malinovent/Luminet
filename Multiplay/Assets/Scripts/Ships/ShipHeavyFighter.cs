@@ -19,14 +19,7 @@ public class ShipHeavyFighter : ShipBase
     private void Awake()
     {
         attackBehaviour = GetComponent<IAttackBehaviour>();
-    }
-    /*public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-
-        capturePointBehaviour.Initialize(ownerId.Value);
-    }*/
-
+    }    
 
     private void OnEnable()
     {

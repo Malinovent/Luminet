@@ -152,6 +152,7 @@ GameObject:
   - component: {fileID: 7479776544304651256}
   - component: {fileID: 948643396528950415}
   - component: {fileID: 8727739501813981029}
+  - component: {fileID: 8600532697758555730}
   m_Layer: 0
   m_Name: Light Zone
   m_TagString: Untagged
@@ -189,7 +190,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2345829088
+  GlobalObjectIdHash: 3098224134
   InScenePlacedSourceGlobalObjectIdHash: 3098224134
   DeferredDespawnTick: 0
   Ownership: 1
@@ -267,6 +268,18 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.15
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8600532697758555730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5497648505148534912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edfe5d26286a9ec42b229e0c087b63ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5821712959366855143
 GameObject:
   m_ObjectHideFlags: 0
@@ -34308,7 +34321,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c22777d6e868e4f2fb421913386b154e, type: 2}
+  - {fileID: 2100000, guid: b9bede07242d25447b6c3516f1584e53, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

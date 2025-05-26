@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 using System;
+using UnityEditor;
 
 public class LightZone : NetworkBehaviour
 {
@@ -23,6 +24,8 @@ public class LightZone : NetworkBehaviour
     private NetworkVariable<bool> myShipPresent = new NetworkVariable<bool>(false);
     private NetworkList<ulong> playersWithShips = new NetworkList<ulong>();
 
+    NetworkVariable<float> timerProgress = new NetworkVariable<float>(0f);
+
 
     public Action onPointCaptured;
 
@@ -36,6 +39,13 @@ public class LightZone : NetworkBehaviour
         controllingClientId.OnValueChanged += (oldVal, newVal) => UpdateVisual();
         myShipPresent.OnValueChanged += (oldVal, newVal) => UpdateVisual();
         playersWithShips.OnListChanged += (change) => UpdateVisual();
+        timerProgress.OnValueChanged += (oldVal, newVal) => UpdateTimerVisual();
+
+        if(startingClientId != NEUTRAL)
+        {
+            timerProgress.Value = 1.5f;
+        }
+
         UpdateVisual();
     }
 
@@ -87,12 +97,15 @@ public class LightZone : NetworkBehaviour
             {
                 counter = 0;
             }
+
+            UpdateProgress();
             return;
         }
 
         if (playerWithMostShipsID != controllingClientId.Value)
         {
             counter += Time.deltaTime * numberOfShipsDifference;
+            UpdateProgress();
             
             if (counter >= maxCountInSeconds)
             {
@@ -163,22 +176,24 @@ public class LightZone : NetworkBehaviour
         }
     }
 
-    private void FindMyShip()
+    private void UpdateProgress()
     {
-        bool foundMine = false;
-        foreach (ShipBase ship in allShipsInZone)
+        if (controllingClientId.Value != NEUTRAL)
         {
-            if (ship.GetOwnerId() == NetworkManager.Singleton.LocalClientId)
-            {
-                Debug.Log("Found my ship in zone " + controllingClientId.Value);
-                foundMine = true;
-                break;
-            }
+            float normalizedProgress = Mathf.Clamp01(counter / maxCountInSeconds);
+            timerProgress.Value = 1.5f - normalizedProgress * 1.5f;
         }
-
-        myShipPresent.Value = foundMine;
+        else
+        {
+            float normalizedProgress = Mathf.Clamp01(counter / maxCountInSeconds);
+            timerProgress.Value = normalizedProgress * 1.5f;
+        }
     }
 
+    private void UpdateTimerVisual()
+    {
+        zoneRenderer.GetComponent<Renderer>().material.SetFloat("_Progress", timerProgress.Value);
+    }
 
     public override void OnNetworkSpawn()
     {
@@ -215,5 +230,14 @@ public class LightZone : NetworkBehaviour
             opaqueRenderer.GetComponent<Renderer>().material.color =
                 controllingClientId.Value == NEUTRAL ? Color.white : PlayerColors.GetColorForClient(controllingClientId.Value);
         }
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        controllingClientId.OnValueChanged -= (oldVal, newVal) => UpdateVisual();
+        myShipPresent.OnValueChanged -= (oldVal, newVal) => UpdateVisual();
+        playersWithShips.OnListChanged -= (change) => UpdateVisual();
+        timerProgress.OnValueChanged -= (oldVal, newVal) => UpdateTimerVisual();
     }
 }

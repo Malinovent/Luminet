@@ -47,7 +47,9 @@ Material:
     - _CastShadows: 1
     - _Cull: 2
     - _DstBlend: 10
-    - _Intensity: 0
+    - _Intensity: 0.59
+    - _Margin: 0.1
+    - _Progress: 0.903
     - _QueueControl: 0
     - _QueueOffset: 50
     - _SrcBlend: 5

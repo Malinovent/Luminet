@@ -2,9 +2,19 @@ using UnityEngine;
 
 public class ShipBomb : ShipBase
 {
-    
-    protected override void OnPathEndReached()
+    [SerializeField] BehaviourCapturePoint capturePointBehaviour;
+
+    public override void Initialize(LaneController laneController, int moveDirection, ulong ownerID)
     {
-        Debug.Log("Game over for other player");
+        base.Initialize(laneController, moveDirection, ownerID);
+        capturePointBehaviour.Initialize(ownerID);
     }
+
+    private void Update()
+    {
+        if (!IsServer) return;
+
+        MoveAlongSpline();        
+    }
+
 }

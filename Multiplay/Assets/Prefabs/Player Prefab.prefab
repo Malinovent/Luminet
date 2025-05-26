@@ -233,6 +233,7 @@ MonoBehaviour:
   - {fileID: 4790882225764014641, guid: cbbb9b42034891044a1c896f16edd372, type: 3}
   - {fileID: 4790882225764014641, guid: 1fb60a9cf7c0aa747976c4842760f462, type: 3}
   - {fileID: 4790882225764014641, guid: 09a7044fe29f2454bb14e24e8fda0a86, type: 3}
+  - {fileID: 4790882225764014641, guid: 21d0ff24db0b4414fa66cec622f01d07, type: 3}
   playerVisuals: {fileID: 7564577344790349516}
 --- !u!114 &7564577344790349516
 MonoBehaviour:
