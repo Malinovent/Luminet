@@ -26,7 +26,6 @@ public class LightZone : NetworkBehaviour
 
     NetworkVariable<float> timerProgress = new NetworkVariable<float>(0f);
 
-
     public Action onPointCaptured;
 
     public ulong GetControllingClientId()
@@ -79,8 +78,16 @@ public class LightZone : NetworkBehaviour
         if (ship != null)
         {
             ulong shipOwner = ship.GetOwnerId();
-            playerShipCount[shipOwner]--;
-            allShipsInZone.Remove(ship);
+            if (!playerShipCount.ContainsKey(shipOwner))
+            {
+                playerShipCount[shipOwner]--;
+            }
+               
+            if(allShipsInZone.Contains(ship))
+            {
+                allShipsInZone.Remove(ship);
+            }
+
             CalculatePlayerWithMostShips();
             UpdateVisual();
         }
@@ -90,7 +97,7 @@ public class LightZone : NetworkBehaviour
     {
         if(!IsServer) return;
 
-        if (playerWithMostShipsID == NEUTRAL && controllingClientId.Value == NEUTRAL && counter > 0)
+        if (playerWithMostShipsID == NEUTRAL && (controllingClientId.Value == NEUTRAL || controllingClientId.Value == controllingClientId.Value) && counter > 0)
         {
             counter -= Time.deltaTime;
             if(counter < 0)
@@ -124,7 +131,8 @@ public class LightZone : NetworkBehaviour
                 UpdatePlayersWithShips();
             }
 
-        }
+            return;
+        }              
     }
 
     private void CalculatePlayerWithMostShips()

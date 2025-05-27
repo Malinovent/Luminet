@@ -2,6 +2,7 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Splines;
+using static UnityEngine.GraphicsBuffer;
 
 public abstract class ShipBase : NetworkBehaviour
 {
@@ -77,6 +78,9 @@ public abstract class ShipBase : NetworkBehaviour
         Vector3 offset = laneController.GetFormationOffset(this, formationOffset); 
 
         transform.position = Vector3.Lerp(transform.position, basePos + offset, Time.deltaTime * 10f);
+
+        Vector3 tangent = lane.EvaluateTangent(t);
+        if (tangent != Vector3.zero) transform.rotation = Quaternion.LookRotation(tangent.normalized, Vector3.up);
 
         if ((direction == 1 && t >= 1f) || (direction == -1 && t <= 0f))
             OnPathEndReached();
