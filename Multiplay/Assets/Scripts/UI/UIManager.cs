@@ -11,6 +11,8 @@ public class UIManager : Singleton<UIManager>
     public TMP_Text resourceText;
     public TMP_Text incomeText;
 
+    [SerializeField] private GameObject gameOverContainer;
+    [SerializeField] private TMP_Text gameOverText;
     [SerializeField] private UIShipCost[] shipsCosts;
 
     PlayerScore localPlayerScore;
@@ -56,6 +58,18 @@ public class UIManager : Singleton<UIManager>
             localPlayerSpawner.RequestSpawnShipServerRpc(shipData.shipIndex, shipData.cost, LaneManager.Instance.GetSelectedLaneIndex());
             //localPlayerSpawner.RequestSpawnShipServerRpc(shipData.shipIndex);
         }
+    }
+
+    public void WinGameUI()
+    {
+        gameOverContainer.SetActive(true);
+        gameOverText.text = "You Win!";
+    }
+
+    public void LoseGameUI()
+    {
+        gameOverContainer.SetActive(true);
+        gameOverText.text = "You Lose!";
     }
 
     private void OnDestroy()

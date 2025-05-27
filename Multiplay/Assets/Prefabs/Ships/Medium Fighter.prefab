@@ -300,7 +300,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   speed: 0.1
-  formationOffset: 0.1
+  formationOffset: 0.2
   playerVisuals: {fileID: 4901662133579875312}
   lightMask: {fileID: 3351177046804424948}
   health: {fileID: 8818458119753749390}
@@ -363,6 +363,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackInterval: 2
   damage: 1
+  projectilePrefab: {fileID: 1724063359136185161, guid: 91fb42e544f35ff44ad8e7f809e1f5f6, type: 3}
 --- !u!135 &6134858588017457689
 SphereCollider:
   m_ObjectHideFlags: 0

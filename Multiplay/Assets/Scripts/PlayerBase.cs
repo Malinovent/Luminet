@@ -9,4 +9,24 @@ public class PlayerBase : NetworkBehaviour
     {
         health.TakeDamage(amount);
     }
+
+    public void Die()
+    {
+        if (!IsServer) return;
+
+        ShowWinLoseScreenClientRpc();
+    }
+
+    [ClientRpc]
+    private void ShowWinLoseScreenClientRpc()
+    {
+        if (IsOwner)
+        {
+            UIManager.Instance.LoseGameUI();
+        }
+        else
+        {
+            UIManager.Instance.WinGameUI();
+        }
+    }
 }

@@ -4660,9 +4660,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   shipPrefabs:
-  - {fileID: 4790882225764014641, guid: cbbb9b42034891044a1c896f16edd372, type: 3}
   - {fileID: 4790882225764014641, guid: 1fb60a9cf7c0aa747976c4842760f462, type: 3}
   - {fileID: 4790882225764014641, guid: 09a7044fe29f2454bb14e24e8fda0a86, type: 3}
+  - {fileID: 4790882225764014641, guid: cbbb9b42034891044a1c896f16edd372, type: 3}
   - {fileID: 4790882225764014641, guid: 21d0ff24db0b4414fa66cec622f01d07, type: 3}
   playerVisuals: {fileID: 7564577344790349516}
 --- !u!114 &7564577344790349516
@@ -5167,6 +5167,34 @@ PrefabInstance:
       propertyPath: 'healthNodes.Array.data[49]'
       value: 
       objectReference: {fileID: 4650115637652449671}
+    - target: {fileID: 5130043431299793826, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
+      propertyPath: onDie.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5130043431299793826, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
+      propertyPath: onDie.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5130043431299793826, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
+      propertyPath: onDie.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2356749251756704000}
+    - target: {fileID: 5130043431299793826, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
+      propertyPath: onDie.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5130043431299793826, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
+      propertyPath: onDie.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Die
+      objectReference: {fileID: 0}
+    - target: {fileID: 5130043431299793826, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
+      propertyPath: onDie.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: PlayerBase, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 5130043431299793826, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
+      propertyPath: onDie.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 6646430869554361240, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.25
