@@ -311,12 +311,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  speed: 0.2
+  speed: 0.05
   formationOffset: 1
   playerVisuals: {fileID: 4901662133579875312}
   lightMask: {fileID: 3351177046804424948}
   health: {fileID: 8818458119753749390}
   explosionPrefab: {fileID: 1337198075554910, guid: 988bd5ff226256e47b43ae8ec95aa769, type: 3}
+  playerDamage: 10
   capturePointBehaviour: {fileID: 6810137904656704966}
 --- !u!114 &6810137904656704966
 MonoBehaviour:
@@ -34495,6 +34496,10 @@ PrefabInstance:
       propertyPath: onDie.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5130043431299793826, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
+      propertyPath: onDie.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 3590839345863400726}
     - target: {fileID: 5130043431299793826, guid: c3cd22f86ab8c3848b12427b92dc2ee4, type: 3}
       propertyPath: onDie.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2

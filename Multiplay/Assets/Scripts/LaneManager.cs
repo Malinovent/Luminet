@@ -1,3 +1,4 @@
+using System.Buffers.Text;
 using Mali.Utils;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -5,7 +6,7 @@ using UnityEngine.Splines;
 public class LaneManager : Singleton<LaneManager>
 {
     public LaneController[] lanes;
-    
+
 
     private LaneController selectedLane;
     public LaneController SelectedLane => selectedLane;
@@ -38,5 +39,7 @@ public class LaneManager : Singleton<LaneManager>
         selectedLane?.DisableOutline();
         selectedLane = newLane;
     }
+
+
 }
 

@@ -9,6 +9,9 @@ public class LaneController : MonoBehaviour, IRaycastable
     [SerializeField] Renderer meshRenderer;
     private List<ShipBase> shipsOnLane = new List<ShipBase>();
 
+    [SerializeField] private ulong clientA;
+    [SerializeField] private ulong clientB;
+
     public SplineContainer Lane => lane;
 
     public void AddShip(ShipBase ship) { shipsOnLane.Add(ship); }
@@ -159,5 +162,10 @@ public class LaneController : MonoBehaviour, IRaycastable
         {
             meshRenderer.material.DisableKeyword("_EMISSION");
         }
+    }
+
+    public ulong GetClientId(int direction)
+    {
+        return direction == 1 ? clientB : clientA;
     }
 }

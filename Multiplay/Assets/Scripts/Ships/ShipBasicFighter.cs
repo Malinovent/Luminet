@@ -1,19 +1,20 @@
 using UnityEngine;
 using UnityEngine.Splines;
 
-public class ShipHeavyFighter : ShipBase
+public class ShipBasicFighter : ShipBase
 {
     [SerializeField] BehaviourCapturePoint capturePointBehaviour;
-    //[SerializeField] BehaviourAttackSingle attackBehaviour;
+    [SerializeField] BehaviourAttackPlayer playerAttackBehaviour;
     IAttackBehaviour attackBehaviour;
 
-    private HeavyFighterStates currentState = HeavyFighterStates.Move;
+    private BasicFighterState currentState = BasicFighterState.Move;
 
     public override void Initialize(LaneController laneController, int moveDirection, ulong ownerID)
     {
         base.Initialize(laneController, moveDirection, ownerID);
         capturePointBehaviour.Initialize(ownerID);
         attackBehaviour.Initialize(laneController);
+        playerAttackBehaviour.Initialize(laneController, direction);
     }
 
     private void Awake()
@@ -41,11 +42,14 @@ public class ShipHeavyFighter : ShipBase
 
         switch(currentState)
         {
-            case HeavyFighterStates.Move:
+            case BasicFighterState.Move:
                 MoveAlongSpline();
                 break;
-            case HeavyFighterStates.Attack:
+            case BasicFighterState.Attack:
                 AttackBehaviour();
+                break;
+            case BasicFighterState.AttackPlayer:
+                AttackPlayerBehaviour();
                 break;
         }
     }
@@ -54,33 +58,33 @@ public class ShipHeavyFighter : ShipBase
     {
         if (attackBehaviour.HasEnemyInRange())
         {
-            SetState(HeavyFighterStates.Attack);
+            SetState(BasicFighterState.Attack);
         }
         else if(capturePointBehaviour.IsCapturing)
         {
-            SetState(HeavyFighterStates.Capture);
+            SetState(BasicFighterState.Capture);
         }
-        else if (currentState == HeavyFighterStates.Attack && !attackBehaviour.HasEnemyInRange())
+        else if (currentState == BasicFighterState.Attack && !attackBehaviour.HasEnemyInRange())
         {
-            SetState(HeavyFighterStates.Move);
+            SetState(BasicFighterState.Move);
         }
     }
 
     private void OnEndCapture()
     {
         //Debug.Log("OnEndCapture called");
-        if (currentState != HeavyFighterStates.Attack)
+        if (currentState != BasicFighterState.Attack)
         {
             //Debug.Log("OnEndCapture called and currentState is not Attack");
-            SetState(HeavyFighterStates.Move);
+            SetState(BasicFighterState.Move);
         }
     }
 
     private void OnStartCapture()
     {
-        if(currentState != HeavyFighterStates.Attack)
+        if(currentState != BasicFighterState.Attack)
         {
-            SetState(HeavyFighterStates.Capture);
+            SetState(BasicFighterState.Capture);
         }        
     }
 
@@ -89,15 +93,26 @@ public class ShipHeavyFighter : ShipBase
         attackBehaviour.PerformAttack();        
     }
 
-    private void SetState(HeavyFighterStates newState)
+    private void AttackPlayerBehaviour()
+    {
+        playerAttackBehaviour.PerformAttack();
+    }
+
+    private void SetState(BasicFighterState newState)
     {
         currentState = newState;
     }
-    
-    private enum HeavyFighterStates
+
+    protected override void OnPathEndReached()
+    {
+        SetState(BasicFighterState.AttackPlayer);
+    }
+
+    private enum BasicFighterState
     {
         Move,
         Capture,
-        Attack
+        Attack,
+        AttackPlayer
     }
 }

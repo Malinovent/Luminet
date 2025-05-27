@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -11,9 +12,9 @@ public abstract class ShipBase : NetworkBehaviour
     [SerializeField] Health3D health;
     [SerializeField] GameObject explosionPrefab;
     
-    private LaneController laneController;
+    protected LaneController laneController;
     private SplineContainer lane;
-    private int direction = 1;
+    protected int direction = 1;
     private float t;
 
     protected NetworkVariable<ulong> ownerId = new NetworkVariable<ulong>();
@@ -81,10 +82,8 @@ public abstract class ShipBase : NetworkBehaviour
             OnPathEndReached();
     }
 
-    protected virtual void OnPathEndReached()
-    {
+    protected abstract void OnPathEndReached();
 
-    }
 
     public ulong GetOwnerId()
     {

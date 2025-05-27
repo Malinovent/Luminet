@@ -76,7 +76,7 @@ public class Health3D : NetworkBehaviour
     public void TakeDamage(int amount = 1)
     {
         if(!IsServer) return;
-
+        //Debug.Log($"Taking {amount} damage. Current health: {currentHealth.Value}");
         currentHealth.Value -= amount;
         UpdateHealthNodes();
 
