@@ -6,6 +6,7 @@ using Unity.Services.Lobbies.Models;
 public class LobbyUI : MonoBehaviour
 {
     [SerializeField] TMP_Text playersText;
+    [SerializeField] TMP_Text lobbyCodeText;
     [SerializeField] GameObject playerNamePrefab;
     [SerializeField] Transform playersListParent; // Assign in inspector
 
@@ -42,5 +43,12 @@ public class LobbyUI : MonoBehaviour
         }
 
         playersText.text = $"Players {lobby.Players.Count}/{lobby.MaxPlayers}";
+
+        UpdateLobbyDisplay(lobby);
+    }
+
+    void UpdateLobbyDisplay(Lobby lobby)
+    {
+        lobbyCodeText.text = $"Code: {lobby.LobbyCode}";
     }
 }

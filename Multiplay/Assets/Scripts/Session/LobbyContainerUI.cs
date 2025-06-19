@@ -10,12 +10,18 @@ public class LobbyContainerUI : MonoBehaviour
     [SerializeField] GameObject joinButton;
 
     private Lobby lobby;
+    private bool hasPassword = false;
 
     public void SetLobbyData(Lobby lobbyData)
     {
         Debug.Log($"Lobby Name: {lobbyData.Name}, LobbyCode: {lobbyData.LobbyCode}, Id: {lobbyData.Id}");
         lobbyNameText.text = lobbyData.Name;
-        privateIcon.SetActive(lobbyData.IsPrivate);
+
+        hasPassword = lobbyData.Data.TryGetValue("IsPrivate", out var isPrivateData)
+                  && bool.TryParse(isPrivateData.Value, out bool isPrivate)
+                  && isPrivate;
+
+        privateIcon.SetActive(hasPassword);
         playerCountText.text = $"{lobbyData.Players.Count}/{lobbyData.MaxPlayers}";
         joinButton.SetActive(lobbyData.Players.Count < lobbyData.MaxPlayers);
 
@@ -24,12 +30,15 @@ public class LobbyContainerUI : MonoBehaviour
 
     public void TryJoin()
     {
-        if(lobby.IsPrivate)
+        if(hasPassword)
         {
             //Open password UI
+            LobbyManager.Instance.OpenInputPassword();
+            Debug.Log("Opening password input for private lobby.");
         }
         else
         {
+            Debug.Log("Joining public lobby without password.");
             int nextPlayerNumber = lobby.Players.Count + 1;
             string displayName = $"Player {nextPlayerNumber}";
 
@@ -41,16 +50,8 @@ public class LobbyContainerUI : MonoBehaviour
     {
         try
         {
-            /*if (string.IsNullOrWhiteSpace(lobby.LobbyCode))
-            {
-                Debug.LogError("LobbyCode is null or empty. Cannot join lobby.");
-                return;
-            }*/
-
-            int randomNameSuffix = Random.Range(1, 9999);
-            //LobbyManager.Instance.JoinLobbyByCodeAsync(lobby.LobbyCode, $"RandomPerson{randomNameSuffix}");
             await LobbyManager.Instance.JoinLobbyByIdAsync(lobby.Id, displayName);
-            LobbyManager.Instance.OpenLobby();
+            LobbyManager.Instance.OpenLobby(lobby);
             Debug.Log("Joined lobby successfully.");
         }
         catch (System.Exception ex)

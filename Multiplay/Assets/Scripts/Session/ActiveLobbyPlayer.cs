@@ -56,6 +56,7 @@ public class ActiveLobbyPlayer : MonoBehaviour
         if (string.IsNullOrEmpty(playerId) || string.IsNullOrEmpty(lobbyId))
         {
             Debug.LogWarning("Cannot kick player. Missing playerId or lobbyId.");
+            Destroy(this.gameObject); // Optionally remove from UI
             return;
         }
 

@@ -16,7 +16,9 @@ public class LobbyManager : Singleton<LobbyManager>
     [SerializeField] GameObject lobbyFinderUI;
     [SerializeField] GameObject lobbyCreatorUI;
 
-    private bool isPrivate = false;
+    [SerializeField] LobbyInputPassword lobbyInputPassword;
+
+    private bool requiresPassword = false;
     private string lobbyName = "Default Lobby";
 
     private Lobby currentLobby;
@@ -141,27 +143,27 @@ public class LobbyManager : Singleton<LobbyManager>
         }
     }
 
-    public void SetPrivacy(bool isPrivate)
+    public void SetPrivacy(bool requirePassword)
     {
-        this.isPrivate = isPrivate;
-        Debug.Log($"Lobby privacy set to: {(isPrivate ? "Private" : "Public")}");
+        this.requiresPassword = requirePassword;
+        Debug.Log($"Lobby privacy set to: {(requirePassword ? "Private: Requires Password" : "Public")}");
     }
 
     public async Task<List<Lobby>> GetPublicLobbiesAsync()
     {
-        var query = new QueryLobbiesOptions
+        QueryLobbiesOptions query = new QueryLobbiesOptions
         {
             Filters = new List<QueryFilter>
-        {
-            new QueryFilter(
-                field: QueryFilter.FieldOptions.IsLocked,
-                op: QueryFilter.OpOptions.EQ,
-                value: "false")
-        },
+            {
+                new QueryFilter(
+                    field: QueryFilter.FieldOptions.IsLocked,
+                    op: QueryFilter.OpOptions.EQ,
+                    value: "false")
+            },
             Count = 25
         };
 
-        var response = await LobbyService.Instance.QueryLobbiesAsync(query);
+        QueryResponse response = await LobbyService.Instance.QueryLobbiesAsync(query);
         return response.Results;
     }
 
@@ -187,16 +189,17 @@ public class LobbyManager : Singleton<LobbyManager>
             {
                 { "DisplayName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "Player 1 (Host)") }
             }
-        };
+        };  
 
         // Create the lobby
         CreateLobbyOptions lobbyOptions = new CreateLobbyOptions
         {
-            IsPrivate = isPrivate,
+            //IsPrivate = requiresPassword,
             Player = player,
             Data = new Dictionary<string, DataObject>
             {
-                { "RelayJoinCode", new DataObject(DataObject.VisibilityOptions.Member, relayJoinCode) }
+                { "RelayJoinCode", new DataObject(DataObject.VisibilityOptions.Public, relayJoinCode) },
+                { "IsPrivate", new DataObject(DataObject.VisibilityOptions.Public, requiresPassword.ToString()) }
             }
         };
 
@@ -224,8 +227,10 @@ public class LobbyManager : Singleton<LobbyManager>
         Debug.Log($"Lobby created and Relay Host started. Lobby code: {currentLobby.LobbyCode}, Relay code: {relayJoinCode}");
     }
 
-    public void OpenLobby()
+    public void OpenLobby(Lobby lobby)
     {
+        Debug.Log($"Opening lobby: {lobby.Name}, ID: {lobby.Id}, Code: {lobby.LobbyCode}");
+        currentLobby = lobby;
         lobbyFinderUI.SetActive(false);
         lobbyUI.SetActive(true);
 
@@ -241,9 +246,9 @@ public class LobbyManager : Singleton<LobbyManager>
                 Player = new Player
                 {
                     Data = new Dictionary<string, PlayerDataObject>
-                {
-                    { "DisplayName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, displayName) }
-                }
+                    {
+                        { "DisplayName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, displayName) }
+                    }
                 }
             };
 
@@ -288,14 +293,14 @@ public class LobbyManager : Singleton<LobbyManager>
         try
         {
             // Join the lobby using the code
-            var joinOptions = new JoinLobbyByCodeOptions
+            JoinLobbyByCodeOptions joinOptions = new JoinLobbyByCodeOptions
             {
                 Player = new Player
                 {
                     Data = new Dictionary<string, PlayerDataObject>
-                {
-                    { "DisplayName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, displayName) }
-                }
+                    {
+                        { "DisplayName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, displayName) }
+                    }
                 }
             };
 
@@ -341,6 +346,11 @@ public class LobbyManager : Singleton<LobbyManager>
         {
             Debug.LogError($"Failed to join lobby: {ex}");
         }
+    }
+
+    public void OpenInputPassword()
+    {
+        lobbyInputPassword.OpenContainer();
     }
 
     private void OnDestroy()
