@@ -1,13 +1,14 @@
+using Mali.Utils;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
+using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
-using Unity.Netcode;
-using Unity.Netcode.Transports.UTP;
 using UnityEngine;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Mali.Utils;
 
 public class LobbyManager : Singleton<LobbyManager>
 {
@@ -20,13 +21,23 @@ public class LobbyManager : Singleton<LobbyManager>
 
     private Lobby currentLobby;
     private bool pollLobby = false;
-    private float pollInterval = 2f; // seconds
+    private float pollInterval = 3f; // seconds
 
     public async void StartPollingLobby(string lobbyId)
     {
+        if (pollLobby) return; // already polling
+
         pollLobby = true;
+
         while (pollLobby)
         {
+            if (this == null || !this.isActiveAndEnabled)
+            {
+                Debug.Log("Polling stopped: LobbyManager was destroyed or disabled.");
+                pollLobby = false;
+                break;
+            }
+
             await UpdateLobbyData(lobbyId);
             await Task.Delay((int)(pollInterval * 1000));
         }
@@ -37,19 +48,84 @@ public class LobbyManager : Singleton<LobbyManager>
         pollLobby = false;
     }
 
+    public async void LeaveLobby()
+    {
+        try
+        {
+            if (currentLobby != null && AuthenticationService.Instance.IsSignedIn)
+            {
+                await LobbyService.Instance.RemovePlayerAsync(currentLobby.Id, AuthenticationService.Instance.PlayerId);
+                Debug.Log("Successfully removed player from lobby.");
+            }
+        }
+        catch (LobbyServiceException ex)
+        {
+            Debug.LogWarning($"Failed to remove player from lobby (might already be gone): {ex.Message}");
+        }
+
+        if(NetworkManager.Singleton.IsListening)
+        {                     
+            NetworkManager.Singleton.Shutdown();
+        }        
+
+        StopPollingLobby();
+
+        // Return to lobby finder UI
+        lobbyUI.SetActive(false);
+        lobbyFinderUI.SetActive(true);
+        lobbyCreatorUI.SetActive(false);
+
+        currentLobby = null;
+
+        Debug.Log("Left the lobby and returned to the main menu.");
+    }
+
+
     // Fetch the latest lobby data
     private async Task UpdateLobbyData(string lobbyId)
     {
         try
         {
             currentLobby = await LobbyService.Instance.GetLobbyAsync(lobbyId);
-            
+
+            // Check if this player still exists in the lobby
+            bool isStillInLobby = currentLobby.Players.Exists(p => p.Id == AuthenticationService.Instance.PlayerId);
+            if (!isStillInLobby)
+            {
+                Debug.LogWarning("You were kicked or removed from the lobby.");
+                ShowKickedMessage();
+                LeaveLobby();
+                return;
+            }
+
             lobbyUI.GetComponent<LobbyUI>().UpdatePlayers(currentLobby);
         }
         catch (LobbyServiceException e)
         {
-            Debug.LogError($"Failed to fetch lobby: {e}");
+            if (e.Message.Contains("not found"))
+            {
+                Debug.LogWarning("Lobby was deleted or no longer exists. Leaving...");
+                LeaveLobby();
+                return;
+            }
+
+            if (e.Reason == LobbyExceptionReason.RateLimited || e.Message.Contains("429"))
+            {
+                Debug.LogWarning("Rate limit hit. Backing off polling temporarily.");
+                await Task.Delay(10_000); // wait 10 seconds
+            }
+            else
+            {
+                Debug.LogError($"Unexpected lobby fetch error: {e.Message}");
+            }
         }
+    }
+
+
+    public void ShowKickedMessage()
+    {
+        Debug.Log("You were kicked from the lobby.");
+        //Show UI message to the player
     }
 
     public void SetLobbyName(string lobbyName)
@@ -95,8 +171,7 @@ public class LobbyManager : Singleton<LobbyManager>
 
         // Start polling the lobby for updates
         StartPollingLobby(currentLobby.Id);
-    }
-
+    }  
 
     public async Task SetupRelayHostAsync()
     {
@@ -106,10 +181,19 @@ public class LobbyManager : Singleton<LobbyManager>
         // Get the join code (for sharing with clients)
         string relayJoinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
+        var player = new Player
+        {
+            Data = new Dictionary<string, PlayerDataObject>
+            {
+                { "DisplayName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "Player 1 (Host)") }
+            }
+        };
+
         // Create the lobby
         CreateLobbyOptions lobbyOptions = new CreateLobbyOptions
         {
             IsPrivate = isPrivate,
+            Player = player,
             Data = new Dictionary<string, DataObject>
             {
                 { "RelayJoinCode", new DataObject(DataObject.VisibilityOptions.Member, relayJoinCode) }
@@ -146,6 +230,57 @@ public class LobbyManager : Singleton<LobbyManager>
         lobbyUI.SetActive(true);
 
         StartPollingLobby(currentLobby.Id);
+    }
+
+    public async Task JoinLobbyByIdAsync(string lobbyId, string displayName)
+    {
+        try
+        {
+            var joinOptions = new JoinLobbyByIdOptions
+            {
+                Player = new Player
+                {
+                    Data = new Dictionary<string, PlayerDataObject>
+                {
+                    { "DisplayName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, displayName) }
+                }
+                }
+            };
+
+            currentLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId, joinOptions);
+
+            if (!currentLobby.Data.TryGetValue("RelayJoinCode", out var relayCodeObj))
+            {
+                Debug.LogError("RelayJoinCode not found in lobby data!");
+                return;
+            }
+
+            string relayJoinCode = relayCodeObj.Value;
+            var joinAllocation = await RelayService.Instance.JoinAllocationAsync(relayJoinCode);
+
+            UnityTransport unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+            unityTransport.SetRelayServerData(
+                joinAllocation.RelayServer.IpV4,
+                (ushort)joinAllocation.RelayServer.Port,
+                joinAllocation.AllocationIdBytes,
+                joinAllocation.Key,
+                joinAllocation.ConnectionData,
+                joinAllocation.HostConnectionData,
+                false
+            );
+
+            NetworkManager.Singleton.StartClient();
+            lobbyFinderUI.SetActive(false);
+            lobbyCreatorUI.SetActive(false);
+            lobbyUI.SetActive(true);
+
+            StartPollingLobby(currentLobby.Id);
+            Debug.Log("Joined lobby by ID successfully.");
+        }
+        catch (LobbyServiceException ex)
+        {
+            Debug.LogError($"Failed to join lobby by ID: {ex}");
+        }
     }
 
     public async Task JoinLobbyByCodeAsync(string lobbyCode, string displayName)
@@ -210,6 +345,8 @@ public class LobbyManager : Singleton<LobbyManager>
 
     private void OnDestroy()
     {
-        StopPollingLobby();        
+        LeaveLobby();
     }
+
+
 }

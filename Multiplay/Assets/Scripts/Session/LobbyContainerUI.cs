@@ -30,22 +30,26 @@ public class LobbyContainerUI : MonoBehaviour
         }
         else
         {
-            JoinPublicLobby();
+            int nextPlayerNumber = lobby.Players.Count + 1;
+            string displayName = $"Player {nextPlayerNumber}";
+
+            JoinPublicLobby(displayName);
         }
     }
 
-    private async void JoinPublicLobby()
+    private async void JoinPublicLobby(string displayName)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(lobby.LobbyCode))
+            /*if (string.IsNullOrWhiteSpace(lobby.LobbyCode))
             {
                 Debug.LogError("LobbyCode is null or empty. Cannot join lobby.");
                 return;
-            }
+            }*/
 
             int randomNameSuffix = Random.Range(1, 9999);
-            await LobbyManager.Instance.JoinLobbyByCodeAsync(lobby.LobbyCode, $"RandomPerson{randomNameSuffix}");
+            //LobbyManager.Instance.JoinLobbyByCodeAsync(lobby.LobbyCode, $"RandomPerson{randomNameSuffix}");
+            await LobbyManager.Instance.JoinLobbyByIdAsync(lobby.Id, displayName);
             LobbyManager.Instance.OpenLobby();
             Debug.Log("Joined lobby successfully.");
         }

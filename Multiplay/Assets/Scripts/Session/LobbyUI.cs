@@ -23,7 +23,7 @@ public class LobbyUI : MonoBehaviour
         foreach (Player player in lobby.Players)
         {
             GameObject entry = Instantiate(playerNamePrefab, playersListParent);
-            ActiveLobbyPlayer nameText = entry.GetComponent<ActiveLobbyPlayer>();
+            ActiveLobbyPlayer playerUI = entry.GetComponent<ActiveLobbyPlayer>();
 
             string nameString = player.Id; // Default fallback
 
@@ -33,11 +33,14 @@ public class LobbyUI : MonoBehaviour
                 nameString = player.Data["DisplayName"].Value;
             }
 
-            if (nameText != null)
-                nameText.UpdatePlayerName(nameString);
+            if (playerUI != null)
+                playerUI.SetPlayer(nameString, player.Id, lobby.Id, lobby.HostId);
+            
+            //playerUI.UpdatePlayerName(nameString);
 
             playerEntries.Add(entry);
         }
 
+        playersText.text = $"Players {lobby.Players.Count}/{lobby.MaxPlayers}";
     }
 }
